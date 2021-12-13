@@ -47,7 +47,7 @@ namespace Morphic.OAuth
             }
             set 
             {
-                if (this.ClientSecret == null)
+                if (this.ClientSecret is null)
                 {
                     switch (value)
                     {
@@ -61,7 +61,7 @@ namespace Morphic.OAuth
                             throw new Exception("invalid code path");
                     }
                 } 
-                else /* if (this.ClientSecret != null) */
+                else /* if (this.ClientSecret is not null) */
                 {
                     switch (value)
                     {
@@ -148,7 +148,7 @@ namespace Morphic.OAuth
             // verbatim required constructor implementation for MorphicAssociatedValueEnums
             private RequestAccessTokenError(Values value) : base(value) { }
         }
-        public async Task<IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>> RequestAccessTokenUsingClientCredentialsGrantAsync(Uri tokenEndpointUri, string? scope)
+        public async Task<MorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>> RequestAccessTokenUsingClientCredentialsGrantAsync(Uri tokenEndpointUri, string? scope)
         {
             // per RFC 6749 Section 2.3.1, all token requests using a password (i.e. a client secret) must be secured via TLS
             if (tokenEndpointUri.Scheme.ToLowerInvariant() != "https")
@@ -159,7 +159,7 @@ namespace Morphic.OAuth
             // assemble our message's content
             var postParameters = new List<KeyValuePair<string?, string?>>();
             postParameters.Add(new KeyValuePair<string?, string?>("grant_type", "client_credentials"));
-            if (scope != null)
+            if (scope is not null)
             {
                 postParameters.Add(new KeyValuePair<string?, string?>("scope", scope));
             }
@@ -191,7 +191,7 @@ namespace Morphic.OAuth
             requestMessage.Content = new FormUrlEncodedContent(postParameters);
             //
             // set the authorization header (if we're using the ClientSecretBasic token endpoint auth method)
-            if (encodedClientIdAndSecret != null)
+            if (encodedClientIdAndSecret is not null)
             {
                 requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", encodedClientIdAndSecret);
             }
@@ -199,7 +199,7 @@ namespace Morphic.OAuth
             // NOTE: although the OAuth spec doesn't specify it as a requirement, we set our accept header to "application/json"; if this causes troubles in production we can remove it
             // set the Accept header
             requestMessage.Headers.Accept.Clear();
-            requestMessage.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(EncodingUtils.CONTENT_TYPE_APPLICATION_JSON));
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(EncodingUtils.CONTENT_TYPE_APPLICATION_JSON));
 
             // send our request (and capture the response)
             using (var httpClient = new HttpClient())
@@ -212,14 +212,14 @@ namespace Morphic.OAuth
                 catch (HttpRequestException)
                 {
                     // network/http error (connectivity, dns, tls)
-                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.NetworkError);
+                    return MorphicResult.ErrorResult(RequestAccessTokenError.NetworkError);
                 }
                 catch (TaskCanceledException ex)
                 {
                     if (ex.InnerException?.GetType() == typeof(TimeoutException))
                     {
                         // timeout
-                        return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.Timeout);
+                        return MorphicResult.ErrorResult(RequestAccessTokenError.Timeout);
                     }
                     else
                     {
@@ -232,27 +232,27 @@ namespace Morphic.OAuth
                 {
                     case HttpStatusCode.OK:
                         {
-                            // successful response
+                            // (successful) response
                             var responseContent = await responseMessage.Content.ReadAsStringAsync();
 
-                            if (responseContent != null)
+                            if (responseContent is not null)
                             {
                                 // verify that the response has a content-type of application/json
                                 // NOTE: we do not parse the optional character set; we assume the default character set
                                 var responseContentType = responseMessage.Content.Headers.ContentType?.MediaType;
-                                if (responseContentType != null)
+                                if (responseContentType is not null)
                                 {
                                     var contentTypeIsApplicationJson = EncodingUtils.VerifyContentTypeIsApplicationJson(responseContentType);
                                     if (contentTypeIsApplicationJson == false)
                                     {
                                         // invalid oauth successful response; return the response content
-                                        return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
+                                        return MorphicResult.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
                                     }
                                 }
                                 else
                                 {
                                     // invalid oauth successful response; return the response content
-                                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
+                                    return MorphicResult.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
                                 }
 
                                 // deserialize the response content
@@ -264,29 +264,29 @@ namespace Morphic.OAuth
                                 catch
                                 {
                                     // invalid oauth successful response; return the response content
-                                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
+                                    return MorphicResult.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
                                 }
 
                                 var result = new RequestAccessTokenResponse();
                                 // AccessToken
-                                if (successfulResponse.access_token != null)
+                                if (successfulResponse.access_token is not null)
                                 {
                                     result.AccessToken = successfulResponse.access_token!;
                                 }
                                 else
                                 {
                                     // invalid oauth successful response; return the response content
-                                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
+                                    return MorphicResult.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
                                 }
                                 // TokenType
-                                if (successfulResponse.token_type != null)
+                                if (successfulResponse.token_type is not null)
                                 {
                                     result.TokenType = successfulResponse.token_type!;
                                 }
                                 else
                                 {
                                     // invalid oauth successful response; return the response content
-                                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
+                                    return MorphicResult.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(responseContent));
                                 }
                                 // ExpiresIn
                                 result.ExpiresIn = successfulResponse.expires_in;
@@ -295,12 +295,12 @@ namespace Morphic.OAuth
                                 // Scope
                                 result.Scope = successfulResponse.scope;
 
-                                return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.SuccessResult(result);
+                                return MorphicResult.OkResult(result);
                             }
                             else
                             {
                                 // invalid oauth successful response; return the response content
-                                return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(null));
+                                return MorphicResult.ErrorResult(RequestAccessTokenError.InvalidSuccessResponse(null /* responseContent */));
                             }
                         }
                     case HttpStatusCode.BadRequest:
@@ -310,23 +310,23 @@ namespace Morphic.OAuth
                             // verify that the response has a content-type of application/json
                             // NOTE: we do not parse the optional character set; we assume the default character set
                             var responseContentType = responseMessage.Content.Headers.ContentType?.MediaType;
-                            if (responseContentType != null)
+                            if (responseContentType is not null)
                             {
                                 var contentTypeIsApplicationJson = EncodingUtils.VerifyContentTypeIsApplicationJson(responseContentType);
                                 if (contentTypeIsApplicationJson == false)
                                 {
                                     // invalid oauth error response; return the http error code
-                                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
+                                    return MorphicResult.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
                                 }
                             }
                             else
                             {
                                 // invalid oauth error response; return the http error code
-                                return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
+                                return MorphicResult.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
                             }
 
                             // deserialize the response content
-                            if (responseContent != null)
+                            if (responseContent is not null)
                             {
                                 Rfc6749AccessTokenErrorResponse errorResponse;
                                 try
@@ -336,35 +336,35 @@ namespace Morphic.OAuth
                                 catch
                                 {
                                     // invalid oauth error response; just return the http status code (as it's not an OAuth error)
-                                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
+                                    return MorphicResult.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
                                 }
 
                                 Rfc6749AccessTokenErrorResponseErrorCodes? error = null;
-                                if (errorResponse.error != null)
+                                if (errorResponse.error is not null)
                                 {
                                     error = MorphicEnum<Rfc6749AccessTokenErrorResponseErrorCodes>.FromStringValue(errorResponse.error);
-                                    if (error == null)
+                                    if (error is null)
                                     {
                                         // missing or unknown oauth error code
-                                        return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.UnsupportedOAuthError(errorResponse.error, errorResponse.error_description, errorResponse.error_uri));
+                                        return MorphicResult.ErrorResult(RequestAccessTokenError.UnsupportedOAuthError(errorResponse.error, errorResponse.error_description, errorResponse.error_uri));
                                     }
                                 }
                                 else
                                 {
                                     // if we did not get a valid response, return the HTTP error (as it's not an OAuth error)
-                                    return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
+                                    return MorphicResult.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
                                 }
 
-                                return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.OAuthError(error.Value, errorResponse.error_description, errorResponse.error_uri));
+                                return MorphicResult.ErrorResult(RequestAccessTokenError.OAuthError(error.Value, errorResponse.error_description, errorResponse.error_uri));
                             }
                             else
                             {
                                 // if we did not get a valid response, return the HTTP error (as it's not an OAuth error)
-                                return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
+                                return MorphicResult.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
                             }
                         }
                     default:
-                        return IMorphicResult<RequestAccessTokenResponse, RequestAccessTokenError>.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
+                        return MorphicResult.ErrorResult(RequestAccessTokenError.HttpError(responseMessage.StatusCode));
                 }
             }
         }

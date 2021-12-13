@@ -1,23 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
 	  <Nullable>enable</Nullable>
-	  <Version>0.1.0</Version>
-	  <Authors>Raising the Floor - US, Inc.</Authors>
-	  <Company>Raising the Floor - US, Inc.</Company>
-	  <Description></Description>
-	  <Copyright>Copyright 2021 Raising the Floor - US, Inc.</Copyright>
-	  <RepositoryUrl>https://github.com/raisingthefloor/morphic-oauthclient-lib-cs</RepositoryUrl>
-	  <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
-	  <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-	  <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-	  <PackageTags>oauth, oauth2</PackageTags>
-	  <Product>Morphic OAuth 2.0 Client Library</Product>
+	  <Version>0.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Morphic.Core" Version="1.0.0" />
+    <PackageReference Include="Morphic.Core" Version="1.1.0" />
   </ItemGroup>
 
 </Project>

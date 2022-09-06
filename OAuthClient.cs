@@ -22,10 +22,12 @@
 // * Consumer Electronics Association Foundation
 
 using Morphic.Core;
-using Morphic.OAuth.Client.Rfc6749;
+using Morphic.OAuth.Rfc6749;
+using Morphic.OAuth.Rfc7591;
 using Morphic.OAuth.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -98,7 +100,7 @@ namespace Morphic.OAuth
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;
             //
-            // default token endpoint auth method for a client with an clientId is ClietnSecretBasic
+            // default token endpoint auth method for a client with an clientId is ClientSecretBasic
             this.TokenEndpointAuthMethod = OAuthTokenEndpointAuthMethod.ClientSecretBasic;
         }
 
@@ -256,10 +258,10 @@ namespace Morphic.OAuth
                                 }
 
                                 // deserialize the response content
-                                Rfc6749AccessTokenSuccessfulResponse successfulResponse;
+                                Rfc6749AccessTokenSuccessfulResponseContent successfulResponse;
                                 try
                                 {
-                                    successfulResponse = JsonSerializer.Deserialize<Rfc6749AccessTokenSuccessfulResponse>(responseContent);
+                                    successfulResponse = JsonSerializer.Deserialize<Rfc6749AccessTokenSuccessfulResponseContent>(responseContent);
                                 }
                                 catch
                                 {
@@ -328,10 +330,10 @@ namespace Morphic.OAuth
                             // deserialize the response content
                             if (responseContent is not null)
                             {
-                                Rfc6749AccessTokenErrorResponse errorResponse;
+                                Rfc6749AccessTokenErrorResponseContent errorResponse;
                                 try
                                 {
-                                    errorResponse = JsonSerializer.Deserialize<Rfc6749AccessTokenErrorResponse>(responseContent);
+                                    errorResponse = JsonSerializer.Deserialize<Rfc6749AccessTokenErrorResponseContent>(responseContent);
                                 }
                                 catch
                                 {

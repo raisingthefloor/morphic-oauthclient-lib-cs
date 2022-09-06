@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
 	  <Nullable>enable</Nullable>
-	  <Version>0.2.0</Version>
+	  <Version>0.3.0</Version>
 	  <Authors>Raising the Floor - US, Inc.</Authors>
 	  <Company>Raising the Floor - US, Inc.</Company>
 	  <Description></Description>
@@ -13,12 +13,12 @@
 	  <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	  <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 	  <PackageTags>oauth, oauth2</PackageTags>
-	  <Product>Morphic OAuth 2.0 Client Library</Product>
+	  <Product>Morphic OAuth 2.0 client library</Product>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Morphic.Core" Version="1.1.0" />
-    <PackageReference Include="Morphic.OAuth.Core" Version="1.1.0" />
+    <PackageReference Include="Morphic.OAuth.Core" Version="1.2.0" />
   </ItemGroup>
 
 </Project>

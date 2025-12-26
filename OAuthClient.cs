@@ -1,4 +1,4 @@
-﻿// Copyright 2021-2022 Raising the Floor - US, Inc.
+﻿// Copyright 2021-2025 Raising the Floor - US, Inc.
 //
 // Licensed under the New BSD license. You may not use this file except in
 // compliance with this License.
@@ -44,7 +44,8 @@ public class OAuthClient
     public string? ClientSecret { get; private set; } = null;
 
     private OAuthTokenEndpointAuthMethod _tokenEndpointAuthMethod;
-    public OAuthTokenEndpointAuthMethod TokenEndpointAuthMethod { 
+    public OAuthTokenEndpointAuthMethod TokenEndpointAuthMethod
+    {
         get
         {
             return _tokenEndpointAuthMethod;
@@ -425,12 +426,12 @@ public class OAuthClient
 
                             return MorphicResult.ErrorResult(RegisterClientError.OAuthClientRegistrationError(error.Value, errorResponseContent.error_description));
                         }
-                    else
-                    {
-                        // if we did not get a valid response, return the HTTP error (as it's not an OAuth error)
-                        return MorphicResult.ErrorResult(RegisterClientError.HttpError(responseMessage.StatusCode));
-                    }
-                }
+                        else
+                        {
+                            // if we did not get a valid response, return the HTTP error (as it's not an OAuth error)
+                            return MorphicResult.ErrorResult(RegisterClientError.HttpError(responseMessage.StatusCode));
+                    	}
+                	}
                 case HttpStatusCode.Unauthorized:
                     {
                         // this would typically occur when an unauthorized initial access token was provided
